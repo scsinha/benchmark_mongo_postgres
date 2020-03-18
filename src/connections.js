@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import PGPromise from 'pg-promise';
+import { Pool } from 'pg';
 
 const DB_NAME = "benchmark";
 
@@ -29,12 +30,15 @@ export const connectToMongo = async () => {
     });
 }
 
-export const pgp = PGPromise({});
-export const postgresDB = pgp({
+const pgCn = {
     host: 'localhost',
     port: 5432,
     database: 'benchmark',
     user: 'postgres',
     password: 'postgres',
-    max: 30
-});
+    max: 30,
+    idleTimeoutMillis: 0,
+};
+export const pgp = PGPromise({});
+export const postgresDB = pgp(pgCn);
+export const pool = new Pool(pgCn);

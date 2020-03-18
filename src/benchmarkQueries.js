@@ -6,11 +6,38 @@ export default async () => {
 
     console.time("Mongo aggregate query");
     db.collection('EmailMessageEvents')
-        .aggregate([{$match: {type: {$ne: 'click'}}},{$group: {_id: {type:'$type', url: '$url'}, total: { $sum: 1 }}}])
+        .aggregate([
+            {$match: {type: {$ne: 'click'}}},
+            {$group: {
+                _id: {
+                    websiteId: '$websiteId', 
+                    emailContextId: '$emailContextId', 
+                    type:'$type', 
+                    url: '$url'
+                }, 
+                total: { 
+                    $sum: 1 
+                }
+            }
+        }])
         .toArray((err, docs) => {
             assert.equal(err, null);
 
-            console.log(docs.map(doc => [doc._id, doc.total]));
+            const outJson = docs.reduce((out, doc) => {
+                const { websiteId, emailContextId, type, url } = doc._id;
+                let website = out[websiteId];
+                if (!website) {
+                    website = out[websiteId] = {};
+                }
+                let emailContext = website[emailContextId];
+                if (!emailContext) {
+                    emailContext = website[emailContextId] = {};
+                }
+                emailContext[type] = doc.total;
+
+                return out;
+            },{});
+            console.log(outJson);
             console.timeEnd("Mongo aggregate query");
 
             disconnect();

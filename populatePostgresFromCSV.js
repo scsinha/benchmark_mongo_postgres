@@ -4,5 +4,7 @@ var noOfEvents = process.argv.length >= 3 ? parseInt(process.argv[2]) : undefine
 var chunkSize = process.argv.length > 3 ? parseInt(process.argv[3]) : undefined;
 
 console.time("Populating Postgres");
-populatePostgres({noOfEvents, chunkSize});
-console.timeEnd("Populating Postgres");
+populatePostgres({noOfEvents, chunkSize, fromCSV: true})
+    .then(() => {
+        console.timeEnd("Populating Postgres");
+    });
